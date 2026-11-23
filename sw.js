@@ -1,16 +1,16 @@
 'use strict';
 
-const cacheName = 'ldi-shell-v1';
+const cacheName = 'ldi-shell-v2';
 const files = ['./index.html', './app.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 const scope = self.registration.scope;
 const shell = new URL('./index.html', scope).href;
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(cacheName).then(cache => cache.addAll(files)));
+  event.waitUntil(caches.open(cacheName).then(cache => cache.addAll(files.map(file => new Request(new URL(file, scope), { cache: 'reload' })))));
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(caches.delete('ldi-shell-v1').then(() => self.clients.claim()));
 });
 
 self.addEventListener('fetch', event => {

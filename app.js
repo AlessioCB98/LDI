@@ -107,26 +107,30 @@ function checkboxes(name, selected) {
 }
 
 function activityCard(activity, mode) {
+  const isResult = mode === 'result';
   const dates = activity.history.slice().reverse().map(date =>
     new Date(date).toLocaleDateString('it-IT', { dateStyle: 'long' }));
-  return `<article class="${mode === 'result' ? 'result' : ''}">
-    <h2>${escape(activity.name)}</h2>
+  const content = `
     ${activity.description ? `<p class="description">${escape(activity.description)}</p>` : ''}
     ${activity.tags.length ? `<div class="chips tags">${activity.tags.map(tag =>
       `<span class="tag">${escape(tag)}</span>`).join('')}</div>` : ''}
     ${mode === 'history' ? `<p class="muted">${activity.done ? 'Completata' : 'Di nuovo estraibile'}</p>
       <ul>${dates.map(date => `<li>${date}</li>`).join('')}</ul>
-      ${activity.done ? button('Rivivi', 'revive', activity.id) : ''}` :
+      <div class="row">${activity.done ? button('Rivivi', 'revive', activity.id) : ''}
+      ${button('Elimina', 'delete-activity', activity.id, 'danger')}</div>` :
       `<div class="row">${button('Segna come fatta', 'complete', activity.id)}
-      ${mode === 'list' ? button('Modifica', 'edit', activity.id) : ''}</div>`}
-    </article>`;
+      ${mode === 'list' ? button('Modifica', 'edit', activity.id) +
+        button('Elimina', 'delete-activity', activity.id, 'danger') : ''}</div>`}`;
+  if (isResult) return `<article class="result"><h2>${escape(activity.name)}</h2>${content}</article>`;
+  return `<details class="activity"><summary>${escape(activity.name)}</summary>
+    <div class="activity-content">${content}</div></details>`;
 }
 
 function home() {
   return `<h1>Con chi?</h1>
     ${data.groups.map(item => `<article class="row">
       ${button(escape(item.name), 'open', item.id, 'grow')}
-      ${button('Rinomina', 'rename', item.id)}
+      ${button('Gestisci', 'rename', item.id)}
     </article>`).join('')}
     ${editor?.kind === 'group' ? groupForm() : button('+ Nuovo gruppo', 'new-group', '', 'primary wide')}
     <footer><details><summary>Backup</summary><div class="row">
@@ -140,7 +144,8 @@ function groupForm() {
   return `<form id="group-form"><label class="field">Nome del gruppo
     <input name="name" maxlength="80" required value="${escape(editor.name)}">
     </label><div class="row"><button class="primary">Salva gruppo</button>
-    ${button('Annulla', 'cancel')}</div></form>`;
+    ${button('Annulla', 'cancel')}
+    ${editor.id ? button('Elimina gruppo', 'delete-group', editor.id, 'danger') : ''}</div></form>`;
 }
 
 function activityForm(activity = { name: '', description: '', tags: [] }) {
@@ -231,6 +236,29 @@ app.addEventListener('click', event => {
     case 'rename':
       editor = { kind: 'group', id, name: data.groups.find(item => item.id === id).name };
       break;
+    case 'delete-group': {
+      const target = data.groups.find(item => item.id === id);
+      if (!target || !confirm(`Eliminare «${target.name}», tutte le sue attività e lo storico?`)) return;
+      if (!save(next => { next.groups = next.groups.filter(item => item.id !== id); })) return;
+      sessions.delete(id);
+      editor = null;
+      notify('Gruppo eliminato.');
+      break;
+    }
+    case 'delete-activity': {
+      const target = group().activities.find(item => item.id === id);
+      if (!target || !confirm(`Eliminare «${target.name}» e le sue eventuali date di completamento?`)) return;
+      if (!save(next => {
+        const activeGroup = next.groups.find(item => item.id === groupId);
+        activeGroup.activities = activeGroup.activities.filter(item => item.id !== id);
+      })) return;
+      const current = session();
+      current.seen.delete(id);
+      if (current.picked === id) current.picked = null;
+      if (editor?.id === id) editor = null;
+      notify('Attività eliminata.');
+      break;
+    }
     case 'new-activity':
     case 'edit':
       editor = { kind: 'activity', id };

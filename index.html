@@ -2,13 +2,31 @@
 <html lang="it">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#172a26">
+<meta name="theme-color" content="#121715">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="manifest" href="./manifest.webmanifest">
 <title>LDI · Let’s Do It</title>
 <style>
-:root{font-family:system-ui,sans-serif;color:#172a26;background:#f6f3eb}*{box-sizing:border-box}body{margin:0}header{background:#172a26;color:#fff;padding:calc(20px + env(safe-area-inset-top)) max(20px,env(safe-area-inset-left)) 20px}header div,main{max-width:620px;margin:auto}header strong{color:#e4ff88;font-size:1.4rem;margin-right:10px}main{padding:20px 18px calc(24px + env(safe-area-inset-bottom))}h1{font-size:clamp(2rem,8vw,3rem);letter-spacing:-.055em;margin:12px 0 20px;overflow-wrap:anywhere}h2,h3,p{margin:0 0 10px;overflow-wrap:anywhere}article,details,form{background:#fff;border:1px solid #deded1;border-radius:18px;padding:16px;margin:12px 0}details summary{cursor:pointer;font-weight:700;padding:5px 0}button,.button{display:inline-grid;place-items:center;min-height:44px;border:0;border-radius:12px;padding:9px 13px;background:#e9eee5;color:inherit;font:inherit;font-weight:700;cursor:pointer;text-align:center}button.primary{background:#172a26;color:#e4ff88}button:disabled{opacity:.5;cursor:default}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #63813b;outline-offset:2px}.row,nav,.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grow{flex:1;min-width:0;text-align:left;overflow-wrap:anywhere}nav button{flex:1}nav button[aria-current]{background:#d9ee9f}label.field{display:block;margin:0 0 12px;font-weight:650}input:not([type=checkbox]),textarea{display:block;width:100%;font:inherit;border:1px solid #aab3a7;border-radius:8px;padding:10px;margin-top:5px}fieldset{border:0;padding:0;margin:12px 0}legend{font-weight:700;margin-bottom:5px}.chip,.tag{background:#eef2e7;border-radius:10px;padding:6px 9px;font-size:.92rem}.chip{min-height:44px;display:flex;align-items:center;gap:5px}.chip:has(:checked){background:#e2f5ae}input[type=checkbox]{accent-color:#354e26}.tags{margin:8px 0 12px}.muted{color:#495d51}.description{white-space:pre-wrap}.result{background:#e4ff88;border-color:#c6dc78}.wide{width:100%}#notice:empty{display:none}#notice{background:#fff;padding:10px;border-radius:8px;margin-bottom:8px}footer{margin-top:24px}
+:root{font-family:system-ui,sans-serif;color:#121715;background:#f6f3eb}*{box-sizing:border-box}body{margin:0}header{background:#121715;color:#fff;padding:calc(20px + env(safe-area-inset-top)) max(20px,env(safe-area-inset-left)) 20px}header div,main{max-width:620px;margin:auto}header strong{color:#e4ff88;font-size:1.4rem;margin-right:10px}main{padding:20px 18px calc(24px + env(safe-area-inset-bottom))}h1{font-size:clamp(2rem,8vw,3rem);letter-spacing:-.055em;margin:12px 0 20px;overflow-wrap:anywhere}h2,h3,p{margin:0 0 10px;overflow-wrap:anywhere}article,details,form{background:#fff;border:1px solid #deded1;border-radius:18px;padding:16px;margin:12px 0}details summary{cursor:pointer;font-weight:700;padding:5px 0}button,.button{display:inline-grid;place-items:center;min-height:44px;border:0;border-radius:12px;padding:9px 13px;background:#e9eee5;color:inherit;font:inherit;font-weight:700;cursor:pointer;text-align:center}button.primary{background:#121715;color:#e4ff88}button:disabled{opacity:.5;cursor:default}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #63813b;outline-offset:2px}.row,nav,.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grow{flex:1;min-width:0;text-align:left;overflow-wrap:anywhere}nav button{flex:1}nav button[aria-current]{background:#d9ee9f}label.field{display:block;margin:0 0 12px;font-weight:650}input:not([type=checkbox]),textarea{display:block;width:100%;font:inherit;border:1px solid #aab3a7;border-radius:8px;padding:10px;margin-top:5px}fieldset{border:0;padding:0;margin:12px 0}legend{font-weight:700;margin-bottom:5px}.chip,.tag{background:#eef2e7;border-radius:10px;padding:6px 9px;font-size:.92rem}.chip{min-height:44px;display:flex;align-items:center;gap:5px}.chip:has(:checked){background:#e2f5ae}input[type=checkbox]{accent-color:#354e26}.tags{margin:8px 0 12px}.muted{color:#495d51}.description{white-space:pre-wrap}.result{background:#e4ff88;border-color:#c6dc78}.wide{width:100%}#notice:empty{display:none}#notice{background:#fff;padding:10px;border-radius:8px;margin-bottom:8px}footer{margin-top:24px}
+
+:root{color-scheme:dark;color:#eef3ee;background:#121715}
+header{padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:14px;border-bottom:1px solid #303a34}
+main{padding-top:14px}
+h1{font-size:clamp(1.8rem,7vw,2.6rem);margin:10px 0 14px}
+article,details,form{background:#1d2420;border-color:#303a34;border-radius:12px;margin:8px 0;padding:12px}
+button,.button{background:#2a352e}
+button.primary,nav button[aria-current]{background:#d8f68c;color:#182315}
+input:not([type=checkbox]),textarea{background:#151b17;color:inherit;border-color:#536258}
+.chip,.tag{background:#2a352e}
+.chip:has(:checked){background:#d8f68c;color:#182315}
+.muted{color:#acbdb0}
+.result{background:#263520;border-color:#506b3e}
+#notice{background:#263520}
+button.danger{background:#3b2828;color:#ffbcb5}
+details.activity{padding:0}
+details.activity summary{padding:12px;min-height:44px;overflow-wrap:anywhere}
+.activity-content{padding:12px;border-top:1px solid #303a34}
 </style>
 <body>
 <header><div><strong>LDI</strong> Let’s Do It</div></header>
