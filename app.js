@@ -16,6 +16,7 @@ let page = 'draw';
 let editor = null;
 let filtersOpen = false;
 let readable = true;
+let noticeTimer;
 
 function validate(value) {
   const validText = (text, max) => typeof text === 'string' && text.trim() && text.length <= max;
@@ -45,8 +46,10 @@ try {
   notify('Impossibile leggere i dati locali. Puoi ripristinarli da un backup.');
 }
 
-function notify(message = '') {
+function notify(message = '', temporary = false) {
+  clearTimeout(noticeTimer);
   notice.textContent = message;
+  if (temporary) noticeTimer = setTimeout(notify, 3000);
 }
 
 function save(change, restore = false) {
@@ -83,14 +86,13 @@ function group() {
 
 function session() {
   if (!sessions.has(groupId)) sessions.set(groupId, {
-    include: [], exclude: [], seen: new Set(), picked: null
+    include: [], seen: new Set(), picked: null
   });
   return sessions.get(groupId);
 }
 
 function eligible(activities, current) {
   return activities.filter(activity => !activity.done &&
-    !current.exclude.some(tag => activity.tags.includes(tag)) &&
     Object.entries(categories).every(([category, tags]) => {
       const wanted = current.include.filter(tag => tags.includes(tag));
       return !wanted.length || wanted.some(tag => activity.tags.includes(tag)) ||
@@ -163,20 +165,8 @@ function drawPanel(activities) {
   const pool = eligible(activities, current);
   const remaining = pool.filter(item => !current.seen.has(item.id));
   const picked = pool.find(item => item.id === current.picked);
-  const rows = Object.entries(categories).map(([category, tags]) => `
-    <tbody><tr><th colspan="3" scope="rowgroup" class="filter-category">${category}</th></tr>
-      ${tags.map(tag => `<tr><th scope="row">${tag}</th>
-        ${['include', 'exclude'].map((name, index) => `<td><label>
-          <input type="checkbox" name="${name}" value="${escape(tag)}"
-            aria-label="${index ? 'Escludi' : 'Includi'} ${escape(tag)}"
-            ${current[name].includes(tag) ? 'checked' : ''}>
-        </label></td>`).join('')}</tr>`).join('')}
-    </tbody>`).join('');
-  return `<details id="filters" ${filtersOpen ? 'open' : ''}><summary>Filtri <span id="filter-count">${current.include.length + current.exclude.length || ''}</span></summary>
-    <table class="filter-table" aria-label="Filtri di estrazione">
-      <thead><tr><th scope="col">Categoria</th><th scope="col">Includi</th><th scope="col">Escludi</th></tr></thead>
-      ${rows}
-    </table>
+  return `<details id="filters" ${filtersOpen ? 'open' : ''}><summary>Filtri <span id="filter-count">${current.include.length || ''}</span></summary>
+    ${checkboxes('include', current.include)}
     ${button('Azzera filtri', 'clear-filters')}</details>
     <div id="draw-result" aria-live="polite">${drawResult(pool, remaining, picked, current)}</div>`;
 }
@@ -230,16 +220,19 @@ app.addEventListener('click', event => {
   const { action, id } = control.dataset;
   switch (action) {
     case 'open':
+      notify();
       groupId = id;
       editor = null;
       page = 'draw';
       filtersOpen = false;
       break;
     case 'home':
+      notify();
       groupId = null;
       editor = null;
       break;
     case 'page':
+      notify();
       page = id;
       editor = null;
       break;
@@ -255,7 +248,7 @@ app.addEventListener('click', event => {
       if (!save(next => { next.groups = next.groups.filter(item => item.id !== id); })) return;
       sessions.delete(id);
       editor = null;
-      notify('Gruppo eliminato.');
+      notify('Gruppo eliminato.', true);
       break;
     }
     case 'delete-activity': {
@@ -269,7 +262,7 @@ app.addEventListener('click', event => {
       current.seen.delete(id);
       if (current.picked === id) current.picked = null;
       if (editor?.id === id) editor = null;
-      notify('Attività eliminata.');
+      notify('Attività eliminata.', true);
       break;
     }
     case 'new-activity':
@@ -280,7 +273,7 @@ app.addEventListener('click', event => {
       editor = null;
       break;
     case 'clear-filters':
-      Object.assign(session(), { include: [], exclude: [], seen: new Set(), picked: null });
+      Object.assign(session(), { include: [], seen: new Set(), picked: null });
       break;
     case 'restart':
       session().seen.clear();
@@ -304,7 +297,7 @@ app.addEventListener('click', event => {
       })) return;
       if (session().picked === id) session().picked = null;
       if (action === 'revive') session().seen.delete(id);
-      notify(action === 'revive' ? 'Attività di nuovo estraibile.' : 'Attività completata.');
+      notify(action === 'revive' ? 'Attività di nuovo estraibile.' : 'Attività completata.', true);
       break;
     }
     case 'export': {
@@ -343,19 +336,19 @@ app.addEventListener('change', async event => {
       sessions.clear();
       groupId = null;
       editor = null;
-      notify('Backup ripristinato.');
+      notify('Backup ripristinato.', true);
       render();
     } catch {
       notify('Impossibile importare il file. Seleziona un backup JSON valido di LDI.');
     }
     return;
   }
-  if (!['include', 'exclude'].includes(input.name)) return;
+  if (input.name !== 'include') return;
   const current = session();
-  current[input.name] = [...app.querySelectorAll(`input[name="${input.name}"]:checked`)].map(item => item.value);
+  current.include = [...app.querySelectorAll('input[name="include"]:checked')].map(item => item.value);
   current.seen.clear();
   current.picked = null;
-  app.querySelector('#filter-count').textContent = current.include.length + current.exclude.length || '';
+  app.querySelector('#filter-count').textContent = current.include.length || '';
   const pool = eligible(group().activities, current);
   app.querySelector('#draw-result').innerHTML = drawResult(pool, pool, null, current);
 });

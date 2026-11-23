@@ -22,11 +22,11 @@
 body { margin: 0; }
 header, main { max-width: 620px; margin: auto; }
 header {
-  padding: calc(env(safe-area-inset-top) + 3px) max(14px, env(safe-area-inset-right)) 3px max(14px, env(safe-area-inset-left));
+  padding: calc(env(safe-area-inset-top) + 7px) max(14px, env(safe-area-inset-right)) 6px max(14px, env(safe-area-inset-left));
   color: var(--muted);
-  font-size: .75rem;
+  font-size: 1rem;
 }
-header strong { color: var(--accent); margin-right: 5px; }
+header strong { color: var(--accent); margin-right: 7px; font-size: 1.25rem; }
 main {
   padding: 2px max(14px, env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
 }
@@ -95,14 +95,6 @@ input[type=checkbox] { accent-color: var(--accent); }
 #notice:empty, #filter-count:empty { display: none; }
 #notice { background: #263520; padding: 6px; border-radius: 6px; }
 #filter-count { margin-left: 4px; color: var(--accent); font-size: .8rem; }
-.filter-table { width: 100%; border-collapse: collapse; font-size: .875rem; margin-bottom: 4px; }
-.filter-table th { text-align: left; padding-inline: 4px; }
-.filter-table th:not(:first-child) { text-align: center; }
-.filter-table th[scope=row] { font-weight: 500; }
-.filter-table .filter-category { color: var(--muted); padding-top: 6px; border-top: 1px solid var(--line); }
-.filter-table td { padding: 0; width: 64px; }
-.filter-table label { display: grid; place-items: center; min-height: 32px; cursor: pointer; }
-.filter-table input { width: 17px; height: 17px; margin: 0; }
 #filters > button { margin-bottom: 6px; }
 </style>
 <body>
