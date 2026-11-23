@@ -1,6 +1,6 @@
 'use strict';
 
-const cacheName = 'ldi-shell-v2';
+const cacheName = 'ldi-shell-v3';
 const files = ['./index.html', './app.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 const scope = self.registration.scope;
 const shell = new URL('./index.html', scope).href;
@@ -10,7 +10,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.delete('ldi-shell-v1').then(() => self.clients.claim()));
+  event.waitUntil(Promise.all(['ldi-shell-v1', 'ldi-shell-v2'].map(name => caches.delete(name))).then(() => self.clients.claim()));
 });
 
 self.addEventListener('fetch', event => {

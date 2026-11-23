@@ -127,12 +127,13 @@ function activityCard(activity, mode) {
 }
 
 function home() {
-  return `<h1>Con chi?</h1>
-    ${data.groups.map(item => `<article class="row">
-      ${button(escape(item.name), 'open', item.id, 'grow')}
+  return `<div class="topline"><h1>Con chi?</h1>
+    ${editor?.kind === 'group' ? '' : button('+ Gruppo', 'new-group', '', 'primary')}</div>
+    ${data.groups.map(item => `<div class="group-row">
+      ${button(escape(item.name), 'open', item.id, 'group-name')}
       ${button('Gestisci', 'rename', item.id)}
-    </article>`).join('')}
-    ${editor?.kind === 'group' ? groupForm() : button('+ Nuovo gruppo', 'new-group', '', 'primary wide')}
+    </div>`).join('')}
+    ${editor?.kind === 'group' ? groupForm() : ''}
     <footer><details><summary>Backup</summary><div class="row">
       ${readable ? button('Esporta backup', 'export') : ''}
       <label class="button" for="backup">Importa backup</label>
@@ -143,16 +144,16 @@ function home() {
 function groupForm() {
   return `<form id="group-form"><label class="field">Nome del gruppo
     <input name="name" maxlength="80" required value="${escape(editor.name)}">
-    </label><div class="row"><button class="primary">Salva gruppo</button>
+    </label><div class="row"><button class="primary">Salva</button>
     ${button('Annulla', 'cancel')}
-    ${editor.id ? button('Elimina gruppo', 'delete-group', editor.id, 'danger') : ''}</div></form>`;
+    ${editor.id ? button('Elimina', 'delete-group', editor.id, 'danger') : ''}</div></form>`;
 }
 
 function activityForm(activity = { name: '', description: '', tags: [] }) {
   return `<form id="activity-form"><label class="field">Nome
     <input name="name" maxlength="120" required value="${escape(activity.name)}"></label>
     <label class="field">Descrizione
-    <textarea name="description" rows="3" maxlength="2000">${escape(activity.description)}</textarea></label>
+    <textarea name="description" rows="2" maxlength="2000">${escape(activity.description)}</textarea></label>
     ${checkboxes('tags', activity.tags)}<div class="row"><button class="primary">Salva attività</button>
     ${button('Annulla', 'cancel')}</div></form>`;
 }
@@ -162,10 +163,20 @@ function drawPanel(activities) {
   const pool = eligible(activities, current);
   const remaining = pool.filter(item => !current.seen.has(item.id));
   const picked = pool.find(item => item.id === current.picked);
-  return `<details id="filters" ${filtersOpen ? 'open' : ''}><summary>Filtri</summary>
-    <h3>Includi</h3><p class="muted">Nello stesso campo basta una corrispondenza. Senza stagione, l’attività vale tutto l’anno.</p>
-    ${checkboxes('include', current.include)}
-    <h3>Escludi</h3>${checkboxes('exclude', current.exclude)}
+  const rows = Object.entries(categories).map(([category, tags]) => `
+    <tbody><tr><th colspan="3" scope="rowgroup" class="filter-category">${category}</th></tr>
+      ${tags.map(tag => `<tr><th scope="row">${tag}</th>
+        ${['include', 'exclude'].map((name, index) => `<td><label>
+          <input type="checkbox" name="${name}" value="${escape(tag)}"
+            aria-label="${index ? 'Escludi' : 'Includi'} ${escape(tag)}"
+            ${current[name].includes(tag) ? 'checked' : ''}>
+        </label></td>`).join('')}</tr>`).join('')}
+    </tbody>`).join('');
+  return `<details id="filters" ${filtersOpen ? 'open' : ''}><summary>Filtri <span id="filter-count">${current.include.length + current.exclude.length || ''}</span></summary>
+    <table class="filter-table" aria-label="Filtri di estrazione">
+      <thead><tr><th scope="col">Categoria</th><th scope="col">Includi</th><th scope="col">Escludi</th></tr></thead>
+      ${rows}
+    </table>
     ${button('Azzera filtri', 'clear-filters')}</details>
     <div id="draw-result" aria-live="polite">${drawResult(pool, remaining, picked, current)}</div>`;
 }
@@ -190,17 +201,19 @@ function render() {
   if (page === 'activities') {
     const list = activities.filter(item => !item.done);
     content = editor ? activityForm(activities.find(item => item.id === editor.id)) :
-      button('+ Nuova attività', 'new-activity', '', 'primary wide');
-    content += list.length ? list.map(item => activityCard(item, 'list')).join('') :
+      `<div class="tools-row">${button('+ Nuova attività', 'new-activity', '', 'primary')}</div>`;
+    content += list.length ? `<div class="activity-list">${list.map(item => activityCard(item, 'list')).join('')}</div>` :
       '<p class="muted">Nessuna attività disponibile.</p>';
   }
   if (page === 'history') {
     const list = activities.filter(item => item.history.length).sort((a, b) =>
       b.history.at(-1).localeCompare(a.history.at(-1)));
-    content = list.length ? list.map(item => activityCard(item, 'history')).join('') :
-      '<article>Nessuna attività completata.</article>';
+    content = list.length ? `<div class="activity-list">${list.map(item => activityCard(item, 'history')).join('')}</div>` :
+      '<p class="muted">Nessuna attività completata.</p>';
   }
-  app.innerHTML = `${button('‹ Cambia gruppo', 'home')}<h1>${escape(activeGroup.name)}</h1>
+  app.innerHTML = `<div class="topline group-heading">
+    <button class="back" type="button" data-action="home" aria-label="Cambia gruppo">‹</button>
+    <h1>${escape(activeGroup.name)}</h1></div>
     <nav aria-label="Sezioni">${Object.entries({ draw: 'Estrai', activities: 'Attività', history: 'Completate' })
       .map(([id, label]) => `<button type="button" data-action="page" data-id="${id}"
         ${id === page ? 'aria-current="page"' : ''}>${label}</button>`).join('')}</nav>${content}`;
@@ -307,7 +320,7 @@ app.addEventListener('click', event => {
     }
   }
   render();
-  if (['new-group', 'rename', 'new-activity', 'edit'].includes(action)) {
+  if (['new-group', 'new-activity', 'edit'].includes(action)) {
     app.querySelector('input[name="name"]')?.focus();
   }
 });
@@ -342,6 +355,7 @@ app.addEventListener('change', async event => {
   current[input.name] = [...app.querySelectorAll(`input[name="${input.name}"]:checked`)].map(item => item.value);
   current.seen.clear();
   current.picked = null;
+  app.querySelector('#filter-count').textContent = current.include.length + current.exclude.length || '';
   const pool = eligible(group().activities, current);
   app.querySelector('#draw-result').innerHTML = drawResult(pool, pool, null, current);
 });
